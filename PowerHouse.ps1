@@ -73,28 +73,24 @@ Write-Host "Detected OEM: $manufacturer" -ForegroundColor Cyan
 "OEM Detected: $manufacturer" | Out-File $logPath -Append
 
 switch -Wildcard ($manufacturer) {
-    "*Dell*" {
-        Install-App -Id "Dell.CommandUpdate" -Name "Dell Command | Update"
-    }
-    "*LENOVO*" {
-        Install-App -Id "Lenovo.SystemUpdate" -Name "Lenovo System Update"
-        Install-App -Id "9WZDNCRFJ4MV" -Name "Lenovo Vantage"
-    }
-    "*ASUS*" {
-        Install-App -Id "Asus.ArmouryCrate" -Name "Asus Armoury Crate"
-    }
-    "*HP*" {
-        Install-App -Id "HP.ImageAssistant" -Name "HP Image Assistant"
-        Start-Process "https://support.hp.com/us-en/help/hp-support-assistant"
-        Write-Host "HP Support Assistant launched in browser for manual install." -ForegroundColor Yellow
-    }
-    "*Acer*" {
-        Start-Process "https://www.acer.com/support"
-        Write-Host "Acer support page launched in browser for manual driver and utility access." -ForegroundColor Yellow
-    }
-    default {
-        Write-Host "No OEM-specific tools required for: $manufacturer" -ForegroundColor Yellow
-    }
+    "*Dell*"    { Install-App -Id "Dell.CommandUpdate" -Name "Dell Command | Update" }
+    "*LENOVO*"  { Install-App -Id "Lenovo.SystemUpdate" -Name "Lenovo System Update"
+                  Install-App -Id "9WZDNCRFJ4MV" -Name "Lenovo Vantage" }
+    "*ASUS*"    { Install-App -Id "Asus.ArmouryCrate" -Name "Asus Armoury Crate" }
+    "*HP*"      { Install-App -Id "HP.ImageAssistant" -Name "HP Image Assistant"
+                  Start-Process "https://support.hp.com/us-en/help/hp-support-assistant"
+                  Write-Host "HP Support Assistant launched in browser for manual install." -ForegroundColor Yellow }
+    "*Acer*"    { Start-Process "https://www.acer.com/support"
+                  Write-Host "Acer support page launched in browser for manual driver and utility access." -ForegroundColor Yellow }
+    default     { Write-Host "No OEM-specific tools required for: $manufacturer" -ForegroundColor Yellow }
+}
+
+# AMD CPU Detection
+$cpuName = (Get-WmiObject -Class Win32_Processor).Name
+if ($cpuName -like "*AMD*") {
+    Start-Process "https://www.amd.com/en/support/download/drivers.html"
+    Write-Host "AMD CPU detected — launching Auto-Detect tool." -ForegroundColor Yellow
+    "AMD CPU Detected: $cpuName — Update tool launched" | Out-File $logPath -Append
 }
 
 # App list
@@ -139,6 +135,7 @@ foreach ($app in $apps) {
 Write-Host ""
 Write-Host "All installations attempted." -ForegroundColor Cyan
 Pause
+
 
 
 
