@@ -47,7 +47,7 @@ $apps = @(
     @{ Id = "Microsoft.VCRedist.2015+.x64"; Name = "Microsoft Visual C++ 2015-2022 x64" },
     @{ Id = "Microsoft.VCRedist.2015+.x86"; Name = "Microsoft Visual C++ 2015-2022 x86" },
     # @{ Id = "Microsoft.Office"; Name = "Microsoft 365 Apps for enterprise" },
-    @{ Id = "Google.Chrome"; Name = "Google Chrome" },
+    @{ Id = "Google.Chrome"; Name = "Google Chrome" }
     # @{ Id = "Mozilla.Firefox"; Name = "Mozilla Firefox (en-US)" },
     # @{ Id = "RustDesk.RustDesk"; Name = "RustDesk" },
     # @{ Id = "AnyDesk.AnyDesk"; Name = "AnyDesk" },
@@ -70,3 +70,4 @@ foreach ($app in $apps) {
 Write-Host ""
 Write-Host "All installations attempted." -ForegroundColor Cyan
 Pause
+
