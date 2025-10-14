@@ -85,12 +85,19 @@ switch -Wildcard ($manufacturer) {
     default     { Write-Host "No OEM-specific tools required for: $manufacturer" -ForegroundColor Yellow }
 }
 
-# AMD CPU Detection
+# CPU Detection and Support Tool Logic
 $cpuName = (Get-WmiObject -Class Win32_Processor).Name
+
 if ($cpuName -like "*AMD*") {
     Start-Process "https://www.amd.com/en/support/download/drivers.html"
     Write-Host "AMD CPU detected — launching Auto-Detect tool." -ForegroundColor Yellow
     "AMD CPU Detected: $cpuName — Update tool launched" | Out-File $logPath -Append
+}
+
+if ($cpuName -like "*Intel*") {
+    Install-App -Id "Intel.IntelDriverAndSupportAssistant" -Name "Intel® Driver & Support Assistant"
+    Write-Host "Intel CPU detected — installing Driver & Support Assistant." -ForegroundColor Yellow
+    "Intel CPU Detected: $cpuName — Support Assistant installed" | Out-File $logPath -Append
 }
 
 # App list
@@ -120,7 +127,6 @@ $apps = @(
     @{ Id = "7zip.7zip"; Name = "7-Zip" },
     @{ Id = "VideoLAN.VLC"; Name = "VLC media player" },
     @{ Id = "Notepad++.Notepad++"; Name = "Notepad++" },
-    @{ Id = "Intel.IntelDriverAndSupportAssistant"; Name = "Intel® Driver & Support Assistant" },
     @{ Id = "9NKSQGP7F2NH"; Name = "WhatsApp" },
     @{ Id = "Telegram.TelegramDesktop"; Name = "Telegram Desktop" },
     @{ Id = "SlackTechnologies.Slack"; Name = "Slack" },
@@ -135,6 +141,7 @@ foreach ($app in $apps) {
 Write-Host ""
 Write-Host "All installations attempted." -ForegroundColor Cyan
 Pause
+
 
 
 
