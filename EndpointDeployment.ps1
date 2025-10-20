@@ -22,8 +22,13 @@ Write-Host "WELCOME MR. SHEIK DAWOOD" -ForegroundColor Cyan
 Start-Sleep -Seconds 3
 
 # 📁 Log File Setup
-$logPath = "$env:TEMP\TeknarchInstallLog.txt"
-"Teknarch Setup Log - $(Get-Date)" | Out-File $logPath
+# $logPath = "$env:TEMP\TeknarchInstallLog.txt"
+# "Teknarch Setup Log - $(Get-Date)" | Out-File $logPath
+$logDir = "C:\TeknarchLog"
+$dateTag = Get-Date -Format "yyyyMMdd_HHmmss"
+$logPath = "$logDir\EndpointDeployment_$dateTag.txt"
+New-Item -Path $logDir -ItemType Directory -Force | Out-Null
+"Teknarch Endpoint Deployment Log — $dateTag" | Out-File $logPath
 
 # 🧠 System Info
 $sys  = Get-CimInstance -ClassName Win32_ComputerSystem
@@ -218,6 +223,7 @@ if (Test-Path $historyPath) {
 # ✅ Final Message
 Write-Host "`nDeployment complete. Welcome to SHEIKLAB." -ForegroundColor Cyan
 Pause
+
 
 
 
