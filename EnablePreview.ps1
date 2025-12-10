@@ -47,7 +47,7 @@ Write-Host "All files successfully unblocked." -ForegroundColor Green
 # -----------------------------------------------------
 # 🔵 CLEAR POWERSHELL HISTORY
 # -----------------------------------------------------
-Write-Host "`nClearing PowerShell history..." -ForegroundColor Yellow
+# Write-Host "`nClearing PowerShell history..." -ForegroundColor Yellow
 
 Clear-History -ErrorAction SilentlyContinue
 
@@ -66,5 +66,5 @@ if (Test-Path $historyPath) {
 # -----------------------------------------------------
 # 🔵 FINAL MESSAGE
 # -----------------------------------------------------
-Write-Host "`nDeployment complete. Welcome to SHEIKLAB." -ForegroundColor Cyan
+Write-Host "`nWelcome to SHEIKLAB." -ForegroundColor Cyan
 Pause
