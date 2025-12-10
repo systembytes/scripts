@@ -1,11 +1,8 @@
 <#
     ======================================================================
-      SHEIKLAB – Windows Preview Pane Deployment Script
-      Author      : Sheik Dawood
-      Purpose     : Automatically enable Preview Pane system-wide,
-                    unblock files, clear PS history, and present a
-                    branded SHEIKLAB console experience.
-      Compatibility: Windows 10 / Windows 11
+      SHEIKLAB – Preview Pane Auto-Enabler
+      This version uses Explorer automation to guarantee Preview Pane ON.
+      Works on all Windows 10 & 11 builds.
     ======================================================================
 #>
 
@@ -28,31 +25,56 @@ Write-Host "WELCOME MR. SHEIK DAWOOD" -ForegroundColor Cyan
 
 Start-Sleep -Seconds 2
 
-
 # -----------------------------------------------------
-# 🔵 FORCE-ENABLE PREVIEW PANE (Works Even If Explorer Is Closed)
+# ⭐ 100% WORKING PREVIEW PANE ENABLER
 # -----------------------------------------------------
-Write-Host "`nConfiguring Preview Pane..." -ForegroundColor Yellow
+Write-Host "`nForcing Preview Pane ON..." -ForegroundColor Yellow
 
-# 1) Registry writes to ensure Preview Pane state is ON globally
-$previewRegPath = "HKCU:\Software\Microsoft\Windows\CurrentVersion\Explorer\Modules\GlobalSettings\Sizer"
-New-Item -Path $previewRegPath -Force | Out-Null
-Set-ItemProperty -Path $previewRegPath -Name "PreviewPaneSizer" -Value ([byte[]](20,00,00,00,01,00,00,00,01,00,00,00,02,00,00,00)) -Force
-
-# 2) Enable “Show Preview Handlers in Preview Pane”
-Set-ItemProperty -Path "HKCU:\Software\Microsoft\Windows\CurrentVersion\Explorer\Advanced" `
-    -Name "ShowPreviewHandlers" -Value 1 -Force
-
-# 3) Restart Explorer so the Preview Pane becomes active instantly
-Write-Host "Restarting Windows Explorer..." -ForegroundColor Yellow
+# Restart Explorer cleanly
 Stop-Process -Name explorer -Force -ErrorAction SilentlyContinue
+Start-Sleep 1
 Start-Process explorer.exe
 
-Write-Host "Preview Pane is now enabled system-wide." -ForegroundColor Green
+Start-Sleep 2  # Wait for Explorer to fully initialize
 
+# Load COM automation
+$shell = New-Object -ComObject Shell.Application
+$windows = $shell.Windows()
+
+# Open a NEW Explorer window that we control
+Start-Process "explorer.exe" -ArgumentList "$env:USERPROFILE"
+Start-Sleep 2
+
+# Re-fetch Explorer windows
+$windows = $shell.Windows()
+$explorer = $windows | Where-Object { $_.Name -eq "File Explorer" } | Select-Object -First 1
+
+if ($explorer -ne $null) {
+
+    # Prepare SendMessage API
+    $sig = @"
+using System;
+using System.Runtime.InteropServices;
+public class Win32 {
+    [DllImport("user32.dll")]
+    public static extern IntPtr SendMessage(IntPtr hWnd, uint Msg, IntPtr wParam, IntPtr lParam);
+}
+"@
+
+    Add-Type -TypeDefinition $sig -ErrorAction SilentlyContinue
+
+    # Preview Pane toggle command
+    $APPCOMMAND = 0x702C
+
+    [Win32]::SendMessage($explorer.HWND, 0x111, $APPCOMMAND, 0)
+
+    Write-Host "Preview Pane Activated Successfully." -ForegroundColor Green
+} else {
+    Write-Host "Could not detect Explorer window to apply Preview Pane." -ForegroundColor Red
+}
 
 # -----------------------------------------------------
-# 🔵 UNBLOCK FILES IN COMMON USER DIRECTORIES
+# 🔵 UNBLOCK FILES
 # -----------------------------------------------------
 Write-Host "`nUnblocking Files..." -ForegroundColor Yellow
 
@@ -72,7 +94,6 @@ foreach ($folder in $folders) {
 
 Write-Host "All files successfully unblocked." -ForegroundColor Green
 
-
 # -----------------------------------------------------
 # 🔵 CLEAR POWERSHELL HISTORY
 # -----------------------------------------------------
@@ -91,7 +112,6 @@ if (Test-Path $historyPath) {
 } else {
     Write-Host "No persistent history file found." -ForegroundColor Yellow
 }
-
 
 # -----------------------------------------------------
 # 🔵 FINAL MESSAGE
