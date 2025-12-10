@@ -28,49 +28,36 @@ Start-Sleep -Seconds 2
 # -----------------------------------------------------
 # ⭐ 100% WORKING PREVIEW PANE ENABLER
 # -----------------------------------------------------
-Write-Host "`nForcing Preview Pane ON..." -ForegroundColor Yellow
+# Enable Preview Pane in File Explorer via PowerShell
+# This script sets the registry value to show the Preview Pane and refreshes Explorer
 
-# Restart Explorer cleanly
-Stop-Process -Name explorer -Force -ErrorAction SilentlyContinue
-Start-Sleep 1
-Start-Process explorer.exe
+try {
+    # Registry path for Explorer's Preview Pane setting
+    $regPath = "HKCU:\Software\Microsoft\Windows\CurrentVersion\Explorer\Modules\GlobalSettings\Sizer"
 
-Start-Sleep 2  # Wait for Explorer to fully initialize
+    # Ensure the registry path exists
+    if (-not (Test-Path $regPath)) {
+        New-Item -Path $regPath -Force | Out-Null
+    }
 
-# Load COM automation
-$shell = New-Object -ComObject Shell.Application
-$windows = $shell.Windows()
+    # Set the Preview Pane to enabled (1 = enabled, 0 = disabled)
+    Set-ItemProperty -Path $regPath -Name "PreviewPaneSizer" -Value ([byte[]](0x00,0x00,0x00,0x00,0x00,0x00,0x00,0x00,0x00,0x00,0x00,0x00,0x00,0x00,0x00,0x00)) -Force
 
-# Open a NEW Explorer window that we control
-Start-Process "explorer.exe" -ArgumentList "$env:USERPROFILE"
-Start-Sleep 2
+    # Registry key to remember the pane state
+    $statePath = "HKCU:\Software\Microsoft\Windows\CurrentVersion\Explorer\Modules\GlobalSettings\DetailsContainer"
+    if (-not (Test-Path $statePath)) {
+        New-Item -Path $statePath -Force | Out-Null
+    }
+    Set-ItemProperty -Path $statePath -Name "PreviewPane" -Value 1 -Force
 
-# Re-fetch Explorer windows
-$windows = $shell.Windows()
-$explorer = $windows | Where-Object { $_.Name -eq "File Explorer" } | Select-Object -First 1
+    # Restart Explorer to apply changes
+    Stop-Process -Name explorer -Force
+    Start-Process explorer
 
-if ($explorer -ne $null) {
-
-    # Prepare SendMessage API
-    $sig = @"
-using System;
-using System.Runtime.InteropServices;
-public class Win32 {
-    [DllImport("user32.dll")]
-    public static extern IntPtr SendMessage(IntPtr hWnd, uint Msg, IntPtr wParam, IntPtr lParam);
+    Write-Host "✅ Preview Pane has been enabled in File Explorer." -ForegroundColor Green
 }
-"@
-
-    Add-Type -TypeDefinition $sig -ErrorAction SilentlyContinue
-
-    # Preview Pane toggle command
-    $APPCOMMAND = 0x702C
-
-    [Win32]::SendMessage($explorer.HWND, 0x111, $APPCOMMAND, 0)
-
-    Write-Host "Preview Pane Activated Successfully." -ForegroundColor Green
-} else {
-    Write-Host "Could not detect Explorer window to apply Preview Pane." -ForegroundColor Red
+catch {
+    Write-Host "❌ Error: $($_.Exception.Message)" -ForegroundColor Red
 }
 
 # -----------------------------------------------------
