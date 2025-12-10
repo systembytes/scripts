@@ -58,9 +58,9 @@ $historyPath = [System.IO.Path]::Combine(
 
 if (Test-Path $historyPath) {
     Remove-Item $historyPath -Force
-    Write-Host "PowerShell history cleared." -ForegroundColor Green
+    # Write-Host "PowerShell history cleared." -ForegroundColor Green
 } else {
-    Write-Host "No persistent history file found." -ForegroundColor Yellow
+    # Write-Host "No persistent history file found." -ForegroundColor Yellow
 }
 
 # -----------------------------------------------------
