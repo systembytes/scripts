@@ -133,14 +133,14 @@ if ($gpu -like "*NVIDIA*") { Install-NvidiaApp }
 # 🧑‍💼 powerdesk — Runtime & Framework
 # =====================================
 $appsPowerdesk = @(
-    @{ Id = "Microsoft.VCRedist.2005.x86"; Name = "Visual C++ 2005 x86" },
-    @{ Id = "Microsoft.VCRedist.2008.x86"; Name = "Visual C++ 2008 x86" },
+    # @{ Id = "Microsoft.VCRedist.2005.x86"; Name = "Visual C++ 2005 x86" },
+    # @{ Id = "Microsoft.VCRedist.2008.x86"; Name = "Visual C++ 2008 x86" },
     @{ Id = "Microsoft.VCRedist.2010.x64"; Name = "Visual C++ 2010 x64" },
     @{ Id = "Microsoft.VCRedist.2010.x86"; Name = "Visual C++ 2010 x86" },
-    @{ Id = "Microsoft.VCRedist.2012.x64"; Name = "Visual C++ 2012 x64" },
-    @{ Id = "Microsoft.VCRedist.2012.x86"; Name = "Visual C++ 2012 x86" },
-    @{ Id = "Microsoft.VCRedist.2013.x64"; Name = "Visual C++ 2013 x64" },
-    @{ Id = "Microsoft.VCRedist.2013.x86"; Name = "Visual C++ 2013 x86" },
+    # @{ Id = "Microsoft.VCRedist.2012.x64"; Name = "Visual C++ 2012 x64" },
+    # @{ Id = "Microsoft.VCRedist.2012.x86"; Name = "Visual C++ 2012 x86" },
+    # @{ Id = "Microsoft.VCRedist.2013.x64"; Name = "Visual C++ 2013 x64" },
+    # @{ Id = "Microsoft.VCRedist.2013.x86"; Name = "Visual C++ 2013 x86" },
     @{ Id = "Microsoft.VCRedist.2015+.x64"; Name = "Visual C++ 2015 - 2022 x64" },
     @{ Id = "Microsoft.VCRedist.2015+.x86"; Name = "Visual C++ 2015 - 2022 x86" },
     @{ Id = "Microsoft.DotNet.DesktopRuntime.6"; Name = ".NET Desktop Runtime 6 (LTS)" },
@@ -153,22 +153,22 @@ $appsPowerdesk = @(
 # 🎮 powerbuild — Application
 # ============================
 $appsPowerbuild = $appsPowerdesk + @(
-    @{ Id = "Microsoft.Office"; Name = "Microsoft 365 Apps for enterprise" },
+    @{ Id = "7zip.7zip"; Name = "7-Zip" },
     @{ Id = "Google.Chrome"; Name = "Google Chrome" },
     @{ Id = "9NKSQGP7F2NH"; Name = "WhatsApp" },
-    @{ Id = "Algento.Botim"; Name = "Botim" },
     @{ Id = "SlackTechnologies.Slack"; Name = "Slack" },
     @{ Id = "Zoom.Zoom"; Name = "Zoom Workplace" },
-    @{ Id = "PDFgear.PDFgear"; Name = "PDFgear" },
     @{ Id = "AnyDesk.AnyDesk"; Name = "AnyDesk" },
     @{ Id = "RustDesk.RustDesk"; Name = "RustDesk" },
-    @{ Id = "7zip.7zip"; Name = "7-Zip" },
+    @{ Id = "Microsoft.Office"; Name = "Microsoft 365 Apps for enterprise" },
+    @{ Id = "PDFgear.PDFgear"; Name = "PDFgear" },    
     @{ Id = "JAMSoftware.TreeSize.Free"; Name = "TreeSize Free" }
     # @{ Id = "EpicGames.EpicGamesLauncher"; Name = "Epic Games Launcher" },
     # @{ Id = "Discord.Discord"; Name = "Discord" },
     # @{ Id = "9WZDNCRFJCTK"; Name = "AutoCAD - DWG Viewer & Editor" },
     # @{ Id = "BlenderFoundation.Blender"; Name = "Blender" },
     # @{ Id = "XPDBVSS44R0L9H"; Name = "Notion" },
+    # @{ Id = "Algento.Botim"; Name = "Botim" },
     # @{ Id = "9NBLGGH4XXVW"; Name = "Trello" }  
 )
 
@@ -224,6 +224,7 @@ if (Test-Path $historyPath) {
 # ✅ Final Message
 Write-Host "`nDeployment complete. Welcome to SHEIKLAB." -ForegroundColor Cyan
 Pause
+
 
 
 
