@@ -30,8 +30,8 @@ Write-Host ""
 
 if (-not $args) {
     Write-Host ''
-    Write-Host 'Need help? Check our homepage: ' -NoNewline
-    Write-Host 'https://massgrave.dev' -ForegroundColor Green
+    Write-Host 'Welcome to ' -NoNewline
+    Write-Host 'SHEIKLAB' -ForegroundColor Green
     Write-Host ''
 }
 
