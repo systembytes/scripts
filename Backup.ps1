@@ -24,7 +24,7 @@ Write-Host " ##    ## ##     ## ##        ##  ##   ##  ##       ##     ## ##    
 Write-Host "  ######  ##     ## ######## #### ##    ## ######## ##     ## ########"
 Write-Host "======================================================================" -ForegroundColor Green
 Write-Host ""
-Write-Host "WELCOME MR. SHEIK DAWOOD" -ForegroundColor Cyan
+Write-Host "WELCOME TO SHEIKLAB" -ForegroundColor Cyan
 Start-Sleep -Seconds 2
 Write-Host ""
 
