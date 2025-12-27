@@ -28,12 +28,12 @@ Write-Host ""
 
 # Having trouble launching this script? Check https://massgrave.dev for help.
 
-if (-not $args) {
-    Write-Host ''
-    Write-Host 'Welcome to ' -NoNewline
-    Write-Host 'SHEIKLAB' -ForegroundColor Green
-    Write-Host ''
-}
+#if (-not $args) {
+Write-Host ''
+Write-Host 'Welcome to ' -NoNewline
+Write-Host 'SHEIKLAB' -ForegroundColor Green
+Write-Host ''
+#}
 
 & {
     $psv = (Get-Host).Version.Major
