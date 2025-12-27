@@ -21,7 +21,7 @@ Write-Host " ##    ## ##     ## ##        ##  ##   ##  ##       ##     ## ##    
 Write-Host "  ######  ##     ## ######## #### ##    ## ######## ##     ## ########"
 Write-Host "=======================================================================" -ForegroundColor Green
 Write-Host ""
-# Write-Host "WELCOME MR. SHEIK DAWOOD" -ForegroundColor Cyan
+Write-Host "WELCOME TO SHEIKLAB" -ForegroundColor Cyan
 
 # -----------------------------------------------------
 # 🔵 UNBLOCK FILES
