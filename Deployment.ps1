@@ -8,7 +8,7 @@
 
 # Admin Rights Check
 if (-not ([Security.Principal.WindowsPrincipal] [Security.Principal.WindowsIdentity]::GetCurrent()).IsInRole([Security.Principal.WindowsBuiltInRole] "Administrator")) {
-    Write-Warning "Please run this script as Administrator!"
+    Write-Warning "Please run this script as Administrator!" -ForegroundColor Red
     Pause; exit
 }
 
@@ -229,6 +229,7 @@ if (Test-Path $historyPath) {
 # Final Message
 Write-Host "`nDeployment complete. Welcome to SHEIKLAB." -ForegroundColor Cyan
 Pause
+
 
 
 
