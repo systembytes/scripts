@@ -1,19 +1,19 @@
 <#
-  Teknarch Archiver Deployment — Powered by SHEIKLAB 
+  Backup — Powered by SYSTEMBYTES 
   Author: Sheik Dawood
   Description: Modular backup script with branding, logging, and folder exclusions.
-  Last Updated: 2025-10-18
+  Last Updated: 2026-01-26
 #>
 
-# 🛡️ Admin Rights Check
+# Admin Rights Check
 if (-not ([Security.Principal.WindowsPrincipal] [Security.Principal.WindowsIdentity]::GetCurrent()).IsInRole([Security.Principal.WindowsBuiltInRole] "Administrator")) {
-    Write-Warning "Please run this script as Administrator!"
+    Write-Warning "Please run this script as Administrator!" -ForegroundColor Red
     Read-Host "Press Enter to exit"
     exit
 }
 
-# 🖥️ Banner Branding
-$Host.UI.RawUI.WindowTitle = "Teknarch Archiver — Powered by SHEIKLAB"
+# Banner Branding
+$Host.UI.RawUI.WindowTitle = "Backup"
 Write-Host "======================================================================" -ForegroundColor Green
 Write-Host "  ######  ##     ## ######## #### ##    ## ##          ###    ########"
 Write-Host " ##    ## ##     ## ##        ##  ##   ##  ##         ## ##   ##     ##"
@@ -28,7 +28,7 @@ Write-Host "WELCOME TO SHEIKLAB" -ForegroundColor Cyan
 Start-Sleep -Seconds 2
 Write-Host ""
 
-# 📁 Drive Selection
+# Drive Selection
 $drives = Get-PSDrive -PSProvider 'FileSystem' | Where-Object { $_.Free -gt 0 }
 Write-Host "Available Drives:" -ForegroundColor Cyan
 $drives | ForEach-Object { Write-Host " [$($_.Name)] $($_.Root)" }
@@ -47,11 +47,11 @@ if (-not (Test-Path $backupFolder)) {
     Write-Host "Created backup folder: $backupFolder" -ForegroundColor Green
 }
 
-# 📁 Log File Setup
+# Log File Setup
 $logPath = Join-Path $backupFolder "SHEIKLAB_BackupLog.txt"
 "Backup Log - $(Get-Date -Format 'yyyy-MM-dd HH:mm:ss')" | Out-File $logPath
 
-# 🧠 System Info
+# System Info
 $sys  = Get-CimInstance -ClassName Win32_ComputerSystem
 $cpu  = (Get-CimInstance -ClassName Win32_Processor).Name
 $gpu  = (Get-CimInstance -ClassName Win32_VideoController).Name -join " + "
@@ -77,7 +77,7 @@ Write-Host " GPU         : $gpu"
 Write-Host "========================================================`n" -ForegroundColor Cyan
 Start-Sleep -Seconds 1
 
-# 📦 Backup Function
+# Backup Function
 function Backup-Folder {
     param($source, $target, $label, $exclude = @())
 
@@ -101,7 +101,7 @@ function Backup-Folder {
     }
 }
 
-# 🚀 Start Backup
+# Start Backup
 Backup-Folder "$env:USERPROFILE\Desktop"   "$backupFolder\Desktop"   "Desktop"
 Backup-Folder "$env:USERPROFILE\Documents" "$backupFolder\Documents" "Documents" @(
     "$env:USERPROFILE\Documents\My Pictures",
@@ -113,7 +113,7 @@ Backup-Folder "$env:USERPROFILE\Pictures"  "$backupFolder\Pictures"  "Pictures"
 Backup-Folder "$env:USERPROFILE\Videos"    "$backupFolder\Videos"    "Videos"
 Backup-Folder "$env:USERPROFILE\Music"     "$backupFolder\Music"     "Music"
 
-# 🧹 PowerShell History Cleanup
+# PowerShell History Cleanup
 Clear-History
 $historyPath = "$env:APPDATA\Microsoft\Windows\PowerShell\PSReadLine\ConsoleHost_history.txt"
 if (Test-Path $historyPath) {
@@ -123,7 +123,7 @@ if (Test-Path $historyPath) {
     Write-Host "No persistent history file found." -ForegroundColor Yellow
 }
 
-# 🧾 Log Completion
+# Log Completion
 "Backup completed at $(Get-Date -Format 'yyyy-MM-dd HH:mm:ss')" | Out-File $logPath -Append
 
 # ✅ Final Message
@@ -134,3 +134,4 @@ Write-Host "Files saved in: $backupFolder"
 Write-Host "Log saved in: $logPath"
 Write-Host "============================================================" -ForegroundColor Green
 Read-Host "Press Enter to exit"
+
