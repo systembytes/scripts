@@ -3,7 +3,7 @@
   Version: 1.0
   Author: Sheik Dawood
   Description: Modular, OEM-aware endpoint deployment script for Technarch clients across the UAE.
-  Last Updated: 2025-10-18
+  Last Updated: 2026-01-26
 #>
 
 #Requires -RunAsAdministrator
