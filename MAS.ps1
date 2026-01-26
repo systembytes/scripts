@@ -1,3 +1,11 @@
+<#
+  Microsoft Activation Script — Powered by SYSTEMBYTES
+  Version: 1.0
+  Author: Sheik Dawood
+  Description: Modular, OEM-aware endpoint deployment script for Technarch clients across the UAE.
+  Last Updated: 2025-10-18
+#>
+
 #Requires -RunAsAdministrator
 
 # Admin check
@@ -163,3 +171,13 @@ Write-Host ''
     $FilePaths = @("$env:SystemRoot\Temp\MAS*.cmd", "$env:USERPROFILE\AppData\Local\Temp\MAS*.cmd")
     foreach ($FilePath in $FilePaths) { Get-Item $FilePath -ErrorAction SilentlyContinue | Remove-Item }
 } @args
+
+# PowerShell History Cleanup
+Clear-History
+$historyPath = [System.IO.Path]::Combine($env:APPDATA, 'Microsoft\Windows\PowerShell\PSReadLine\ConsoleHost_history.txt')
+if (Test-Path $historyPath) {
+    Remove-Item $historyPath -Force
+    Write-Host "PowerShell history cleared." -ForegroundColor Green
+} else {
+    Write-Host "No persistent history file found." -ForegroundColor Yellow
+}
