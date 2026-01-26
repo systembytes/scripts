@@ -156,16 +156,15 @@ $appsPowerdesk = @(
 $appsPowerbuild = $appsPowerdesk + @(
     @{ Id = "7zip.7zip"; Name = "7-Zip" },
     @{ Id = "Google.Chrome"; Name = "Google Chrome" },
+    @{ Id = "Mozilla.Firefox"; Name = "Mozilla Firefox" },
     @{ Id = "9NKSQGP7F2NH"; Name = "WhatsApp" },
     @{ Id = "SlackTechnologies.Slack"; Name = "Slack" },
     @{ Id = "Zoom.Zoom"; Name = "Zoom Workplace" },
     @{ Id = "AnyDesk.AnyDesk"; Name = "AnyDesk" },
     @{ Id = "RustDesk.RustDesk"; Name = "RustDesk" },
     @{ Id = "Microsoft.Office"; Name = "Microsoft 365 Apps for enterprise" },
-    @{ Id = "PDFgear.PDFgear"; Name = "PDFgear" },    
-    @{ Id = "JAMSoftware.TreeSize.Free"; Name = "TreeSize Free" }
-    # @{ Id = "EpicGames.EpicGamesLauncher"; Name = "Epic Games Launcher" },
-    # @{ Id = "Discord.Discord"; Name = "Discord" },
+    @{ Id = "PDFgear.PDFgear"; Name = "PDFgear" }  
+    # @{ Id = "JAMSoftware.TreeSize.Free"; Name = "TreeSize Free" },
     # @{ Id = "9WZDNCRFJCTK"; Name = "AutoCAD - DWG Viewer & Editor" },
     # @{ Id = "BlenderFoundation.Blender"; Name = "Blender" },
     # @{ Id = "XPDBVSS44R0L9H"; Name = "Notion" },
@@ -178,13 +177,17 @@ $appsPowerbuild = $appsPowerdesk + @(
 # =================================
 $appsPowerstack = $appsPowerbuild + @( 
     @{ Id = "Audacity.Audacity"; Name = "Audacity" },
-    @{ Id = "OBSProject.OBSStudio"; Name = "OBS Studio" },
-    @{ Id = "ShareX.ShareX"; Name = "ShareX" },
-    @{ Id = "Canva.Canva"; Name = "Canva Desktop" },
+    @{ Id = "Microsoft.Sysinternals.ZoomIt"; Name = "ZoomIt" },
+    @{ Id = "EpicGames.EpicGamesLauncher"; Name = "Epic Games Launcher" },
     @{ Id = "ByteDance.CapCut"; Name = "CapCut" },
     @{ Id = "Canva.Affinity"; Name = "Affinity" },
     @{ Id = "Google.GoogleDrive"; Name = "Google Drive" },
+     @{ Id = "VideoLAN.VLC"; Name = "VLC media player" },
     @{ Id = "Telegram.TelegramDesktop"; Name = "Telegram Desktop" }
+    # @{ Id = "Discord.Discord"; Name = "Discord" },
+    # @{ Id = "OBSProject.OBSStudio"; Name = "OBS Studio" },
+    # @{ Id = "ShareX.ShareX"; Name = "ShareX" },
+    # @{ Id = "Canva.Canva"; Name = "Canva Desktop" },
 )
 
 # 🔀 Profile Selection
@@ -225,6 +228,7 @@ if (Test-Path $historyPath) {
 # ✅ Final Message
 Write-Host "`nDeployment complete. Welcome to SHEIKLAB." -ForegroundColor Cyan
 Pause
+
 
 
 
