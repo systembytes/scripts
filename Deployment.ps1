@@ -164,7 +164,8 @@ $appsPowerbuild = $appsPowerdesk + @(
     @{ Id = "AnyDesk.AnyDesk"; Name = "AnyDesk" },
     @{ Id = "RustDesk.RustDesk"; Name = "RustDesk" },
     @{ Id = "Microsoft.Office"; Name = "Microsoft 365 Apps for enterprise" },
-    @{ Id = "PDFgear.PDFgear"; Name = "PDFgear" }  
+    @{ Id = "PDFgear.PDFgear"; Name = "PDFgear" } 
+    # @{ Id = "FastCopy.FastCopy"; Name = "FastCopy" },
     # @{ Id = "JAMSoftware.TreeSize.Free"; Name = "TreeSize Free" },
     # @{ Id = "9WZDNCRFJCTK"; Name = "AutoCAD - DWG Viewer & Editor" },
     # @{ Id = "BlenderFoundation.Blender"; Name = "Blender" },
@@ -229,6 +230,7 @@ if (Test-Path $historyPath) {
 # Final Message
 Write-Host "`nDeployment complete. Welcome to SHEIKLAB." -ForegroundColor Cyan
 Pause
+
 
 
 
