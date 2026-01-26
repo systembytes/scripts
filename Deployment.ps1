@@ -1,13 +1,19 @@
 <#
-  Teknarch Endpoint Deployment — Powered by SHEIKLAB
+  Endpoint Deployment — Powered by SYSTEMBYTES
   Version: 3.6
   Author: Sheik Dawood
   Description: Modular, OEM-aware endpoint deployment script for Technarch clients across the UAE.
   Last Updated: 2025-10-18
 #>
 
-# 🖥️ Branding Banner
-$host.UI.RawUI.WindowTitle = "Endpoint Deployment — Powered by SHEIKLAB"
+# Admin Rights Check
+if (-not ([Security.Principal.WindowsPrincipal] [Security.Principal.WindowsIdentity]::GetCurrent()).IsInRole([Security.Principal.WindowsBuiltInRole] "Administrator")) {
+    Write-Warning "Please run this script as Administrator!"
+    Pause; exit
+}
+
+# SHEIKLAB Banner
+$host.UI.RawUI.WindowTitle = "Endpoint Deployment"
 Write-Host "=======================================================================" -ForegroundColor Green
 Write-Host "  ######  ##     ## ######## #### ##    ## ##          ###    ########"
 Write-Host " ##    ## ##     ## ##        ##  ##   ##  ##         ## ##   ##     ##"
@@ -21,7 +27,7 @@ Write-Host ""
 Write-Host "WELCOME MR. SHEIK DAWOOD" -ForegroundColor Cyan
 Start-Sleep -Seconds 3
 
-# 📁 Log File Setup
+# Log File Setup
 # $logPath = "$env:TEMP\TeknarchInstallLog.txt"
 # "Teknarch Setup Log - $(Get-Date)" | Out-File $logPath
 $logDir = "C:\SHEIKLAB"
@@ -30,7 +36,7 @@ $logPath = "$logDir\EndpointDeployment_$dateTag.txt"
 New-Item -Path $logDir -ItemType Directory -Force | Out-Null
 "SHEIKLAB Endpoint Deployment Log — $dateTag" | Out-File $logPath
 
-# 🧠 System Info
+# System Info
 $sys  = Get-CimInstance -ClassName Win32_ComputerSystem
 $cpu  = (Get-CimInstance -ClassName Win32_Processor).Name
 $gpu  = (Get-CimInstance -ClassName Win32_VideoController).Name -join " + "
@@ -56,11 +62,6 @@ Write-Host " GPU         : $gpu"
 Write-Host "========================================================`n" -ForegroundColor Cyan
 Start-Sleep -Seconds 2
 
-# 🔐 Admin Rights Check
-if (-not ([Security.Principal.WindowsPrincipal] [Security.Principal.WindowsIdentity]::GetCurrent()).IsInRole([Security.Principal.WindowsBuiltInRole] "Administrator")) {
-    Write-Warning "Please run this script as Administrator!"
-    Pause; exit
-}
 
 function Install-App ($Id, $Name) {
     Write-Host "Installing $Name ..." -ForegroundColor Yellow
@@ -109,7 +110,7 @@ function Install-GigabyteControlCenter {
     Remove-Item $zip, $dest -Recurse -Force
 }
 
-# 🏷️ OEM Detection
+# OEM Detection
 $manufacturer = $sys.Manufacturer.Trim()
 Write-Host "Detected OEM: $manufacturer" -ForegroundColor Cyan
 switch -Wildcard ($manufacturer) {
@@ -123,14 +124,14 @@ switch -Wildcard ($manufacturer) {
 }
 
 # ====================
-# 🧠 CPU/GPU Detection
+# CPU/GPU Detection
 # ====================
 if ($cpu -like "*AMD*")   { Install-AMDAdrenalinDriver }
 if ($cpu -like "*Intel*") { Install-App "Intel.IntelDriverAndSupportAssistant" "Intel® Driver & Support Assistant" }
 if ($gpu -like "*NVIDIA*") { Install-NvidiaApp }
 
 # =====================================
-# 🧑‍💼 powerdesk — Runtime & Framework
+# powerdesk — Runtime & Framework
 # =====================================
 $appsPowerdesk = @(
     @{ Id = "Microsoft.VCRedist.2005.x86"; Name = "Visual C++ 2005 x86" },
@@ -151,7 +152,7 @@ $appsPowerdesk = @(
 )
 
 # ============================
-# 🎮 powerbuild — Application
+# powerbuild — Application
 # ============================
 $appsPowerbuild = $appsPowerdesk + @(
     @{ Id = "7zip.7zip"; Name = "7-Zip" },
@@ -173,7 +174,7 @@ $appsPowerbuild = $appsPowerdesk + @(
 )
 
 # =================================
-# 🎨 powerstack — Content Creation
+# powerstack — Content Creation
 # =================================
 $appsPowerstack = $appsPowerbuild + @( 
     @{ Id = "Audacity.Audacity"; Name = "Audacity" },
@@ -190,14 +191,14 @@ $appsPowerstack = $appsPowerbuild + @(
     # @{ Id = "Canva.Canva"; Name = "Canva Desktop" },
 )
 
-# 🔀 Profile Selection
+# Profile Selection
 Write-Host "`nAvailable Profiles:" -ForegroundColor Cyan
 Write-Host "  - powerdesk   (Runtime & Framework)"
 Write-Host "  - powerbuild  (Application)"
 Write-Host "  - powerstack  (Content Creation)"
 $profile = Read-Host "Enter profile name"
 
-# 🧠 Profile Mapping
+# Profile Mapping
 switch ($profile.ToLower()) {
     "powerdesk"   { $appsToInstall = $appsPowerdesk }
     "powerbuild"  { $appsToInstall = $appsPowerbuild }
@@ -208,14 +209,14 @@ switch ($profile.ToLower()) {
     }
 }
 
-# 🚀 Install Loop
+# Install Loop
 Write-Host "`nStarting installation for profile: $profile" -ForegroundColor Cyan
 foreach ($app in $appsToInstall) {
     Install-App -Id $app.Id -Name $app.Name
 }
 Write-Host "`nAll installations attempted for profile: $profile" -ForegroundColor Green
 
-# 🧹 PowerShell History Cleanup
+# PowerShell History Cleanup
 Clear-History
 $historyPath = [System.IO.Path]::Combine($env:APPDATA, 'Microsoft\Windows\PowerShell\PSReadLine\ConsoleHost_history.txt')
 if (Test-Path $historyPath) {
@@ -225,9 +226,10 @@ if (Test-Path $historyPath) {
     Write-Host "No persistent history file found." -ForegroundColor Yellow
 }
 
-# ✅ Final Message
+# Final Message
 Write-Host "`nDeployment complete. Welcome to SHEIKLAB." -ForegroundColor Cyan
 Pause
+
 
 
 
