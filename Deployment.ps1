@@ -3,7 +3,7 @@
   Version: 3.6
   Author: Sheik Dawood
   Description: Modular, OEM-aware endpoint deployment script for Technarch clients across the UAE.
-  Last Updated: 2025-10-18
+  Last Updated: 2026-01-26
 #>
 
 # Admin Rights Check
@@ -229,6 +229,7 @@ if (Test-Path $historyPath) {
 # Final Message
 Write-Host "`nDeployment complete. Welcome to SHEIKLAB." -ForegroundColor Cyan
 Pause
+
 
 
 
