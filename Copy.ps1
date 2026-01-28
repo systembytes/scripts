@@ -28,84 +28,83 @@ Write-Host "WELCOME TO SHEIKLAB" -ForegroundColor Cyan
 Start-Sleep -Seconds 2
 Write-Host ""
 
-# Prompt for source and destination
-$Source = Read-Host "Enter SOURCE folder full path"
+# -------- User Input --------
+$Source      = Read-Host "Enter SOURCE folder full path"
 $Destination = Read-Host "Enter DESTINATION folder full path"
 
-# Validate paths
+# -------- Validation --------
 if (!(Test-Path $Source)) {
     Write-Host "ERROR: Source path does not exist." -ForegroundColor Red
-    exit
+    return
 }
 
 if (!(Test-Path $Destination)) {
-    Write-Host "Destination does not exist. Creating destination folder..." -ForegroundColor Yellow
+    Write-Host "Destination does not exist. Creating it..." -ForegroundColor Yellow
     New-Item -ItemType Directory -Path $Destination | Out-Null
 }
 
-# Log file in destination
+# -------- Log File --------
 $LogFile = Join-Path $Destination "robocopy_log_$(Get-Date -Format 'yyyyMMdd_HHmmss').log"
-
 Write-Host "Log File: $LogFile" -ForegroundColor Green
 
-# High-speed copy arguments
+# ==============================================================
+# FAST COPY PHASE
+# ==============================================================
+Write-Host "\n[1/2] Starting FAST COPY..." -ForegroundColor Cyan
+
 $CopyArgs = @(
     "`"$Source`"",
     "`"$Destination`"",
-    "/E",              # Copy all subfolders including empty
-    "/Z",              # Restartable mode
+    "/E",              # All folders (incl empty)
+    "/Z",              # Restartable
     "/B",              # Backup mode
-    "/R:3",            # Retry 3 times
-    "/W:5",            # Wait 5 sec between retries
-    "/MT:32",          # Multithreaded copy (fast)
-    "/COPY:DATSOU",    # Copy Data, Attributes, Timestamps, Security, Owner, Auditing
-    "/DCOPY:T",        # Copy directory timestamps
-    "/NP",             # No progress
-    "/TEE",            # Output to console + log
-    "/LOG+:`"$LogFile`""  # Append log
-)
-
-Write-Host "Starting FAST COPY operation..." -ForegroundColor Cyan
-
-# Execute robocopy
-robocopy @CopyArgs
-$CopyExitCode = $LASTEXITCODE
-
-Write-Host "=============================================" -ForegroundColor Cyan
-Write-Host "Copy completed. Starting verification phase..." -ForegroundColor Cyan
-Write-Host "=============================================" -ForegroundColor Cyan
-
-# Verification using robocopy (no copy, only compare)
-$VerifyArgs = @(
-    "`"$Source`"",
-    "`"$Destination`"",
-    "/E",
-    "/R:0",
-    "/W:0",
-    "/MT:32",
-    "/COPY:DATSOU",
-    "/DCOPY:T",
-    "/NFL",           # No file list
-    "/NDL",           # No dir list
-    "/L",             # List only (no copy)
-    "/TEE",
+    "/MT:32",          # Multithreaded (fast)
+    "/R:3",            # Retries
+    "/W:5",            # Wait time
+    "/COPY:DATSOU",    # Full metadata
+    "/DCOPY:T",        # Folder timestamps
+    "/TEE",            # Console + log
     "/LOG+:`"$LogFile`""
 )
 
-Write-Host "Running verification (comparison-only mode)..." -ForegroundColor Yellow
+robocopy @CopyArgs
+$CopyExitCode = $LASTEXITCODE
+
+# ==============================================================
+# VERIFICATION PHASE (COMPARE ONLY)
+# ==============================================================
+Write-Host "\n[2/2] Starting VERIFICATION (Compare Only)..." -ForegroundColor Yellow
+
+$VerifyArgs = @(
+    "`"$Source`"",
+    "`"$Destination`"",
+    "/E",              # All folders
+    "/L",              # List only (NO copy)
+    "/V",              # Verbose
+    "/BYTES",          # Byte-level compare
+    "/TS",             # Timestamps
+    "/FP",             # Full paths
+    "/MT:32",          # Fast scan
+    "/R:0",            # No retries
+    "/W:0",            # No wait
+    "/TEE",            # Console + log
+    "/LOG+:`"$LogFile`""
+)
+
 robocopy @VerifyArgs
 $VerifyExitCode = $LASTEXITCODE
 
-Write-Host "=============================================" -ForegroundColor Green
-Write-Host "Operation completed." -ForegroundColor Green
-Write-Host "Copy Exit Code: $CopyExitCode" -ForegroundColor Green
-Write-Host "Verify Exit Code: $VerifyExitCode" -ForegroundColor Green
-Write-Host "Log file saved to:" -ForegroundColor Green
-Write-Host $LogFile -ForegroundColor Green
-Write-Host "=============================================" -ForegroundColor Green
+# ==============================================================
+# SUMMARY
+# ==============================================================
+Write-Host "\n==============================================" -ForegroundColor Green
+Write-Host "Operation Completed" -ForegroundColor Green
+Write-Host "Copy Exit Code   : $CopyExitCode" -ForegroundColor Green
+Write-Host "Verify Exit Code : $VerifyExitCode" -ForegroundColor Green
+Write-Host "Log File         : $LogFile" -ForegroundColor Green
+Write-Host "==============================================" -ForegroundColor Green
 
-Write-Host "Press ENTER to close window..." -ForegroundColor Cyan
-Read-Host
+# Keep PowerShell open for more commands
+Write-Host "\nPowerShell session remains open. You may run other commands." -ForegroundColor Cyan
+return
 
-# Exit clean
-exit
