@@ -29,20 +29,24 @@ Start-Sleep -Seconds 2
 Write-Host ""
 
 # -------------------------
-# Prompt for Source & Destination
+# Prompt for missing arguments
 # -------------------------
-$source = Read-Host "Enter SOURCE folder path (full path)"
-if (-not (Test-Path -Path $source -PathType Container)) {
-    Write-Host "❌ Source path does not exist or is not a folder: $source" -ForegroundColor Red
+if (-not $Source) {
+    $Source = Read-Host "Enter SOURCE folder path (full path)"
+}
+if (-not (Test-Path -Path $Source -PathType Container)) {
+    Write-Host "❌ Source path does not exist or is not a folder: $Source" -ForegroundColor Red
     Read-Host "Press Enter to exit"
     exit 2
 }
 
-$destination = Read-Host "Enter DESTINATION folder path (full path)"
-if (-not (Test-Path -Path $destination -PathType Container)) {
-    Write-Host "Destination does not exist. Creating: $destination" -ForegroundColor Yellow
+if (-not $Destination) {
+    $Destination = Read-Host "Enter DESTINATION folder path (full path)"
+}
+if (-not (Test-Path -Path $Destination -PathType Container)) {
+    Write-Host "Destination does not exist. Creating: $Destination" -ForegroundColor Yellow
     try {
-        New-Item -Path $destination -ItemType Directory -Force | Out-Null
+        New-Item -Path $Destination -ItemType Directory -Force | Out-Null
     } catch {
         Write-Host "❌ Failed to create destination: $_" -ForegroundColor Red
         Read-Host "Press Enter to exit"
@@ -51,7 +55,7 @@ if (-not (Test-Path -Path $destination -PathType Container)) {
 }
 
 # -------------------------
-# Prepare Log Filenames (yyyyMMdd_SOURCENAME_DESTNAME)
+# Prepare single log filename yyyyMMdd_src_dst.log
 # -------------------------
 function Sanitize-PathForName {
     param([string]$path)
@@ -64,180 +68,125 @@ function Sanitize-PathForName {
 }
 
 $today = Get-Date -Format yyyyMMdd
-$srcName = Sanitize-PathForName -path $source
-$dstName = Sanitize-PathForName -path $destination
+$srcName = Sanitize-PathForName -path $Source
+$dstName = Sanitize-PathForName -path $Destination
 $baseName = "${today}_${srcName}_${dstName}"
+$finalLog = Join-Path $Destination ("$baseName.log")
 
-$robocopyLog       = Join-Path $destination ("robocopy_" + $baseName + ".log")
-$verifiedCopied    = Join-Path $destination ("COPIED_" + $baseName + ".txt")
-$verifiedNotCopied = Join-Path $destination ("NOT_COPIED_" + $baseName + ".txt")
-$dryRunLog         = Join-Path $destination ("DRYRUN_" + $baseName + ".log")
-
-# Initialize logs
-"Robocopy Log - $(Get-Date -Format 'yyyy-MM-dd HH:mm:ss')" | Out-File -FilePath $robocopyLog -Encoding UTF8
-"Verification - Copied files - $baseName" | Out-File -FilePath $verifiedCopied -Encoding UTF8
-"Verification - Not copied files - $baseName" | Out-File -FilePath $verifiedNotCopied -Encoding UTF8
-"Dry-run verification - $(Get-Date -Format 'yyyy-MM-dd HH:mm:ss')" | Out-File -FilePath $dryRunLog -Encoding UTF8
+# Temporary robocopy log (keeps detailed copy log while copying)
+$tempRobocopyLog = Join-Path $Destination ("robocopy_temp_$baseName.log")
+"Robocopy session started: $(Get-Date -Format 'yyyy-MM-dd HH:mm:ss')" | Out-File -FilePath $tempRobocopyLog -Encoding UTF8
 
 # -------------------------
-# Build file list and totals
+# Compute totals for progress
 # -------------------------
-Write-Host "`nScanning source files..." -ForegroundColor Yellow
-$files = Get-ChildItem -Path $source -Recurse -File -ErrorAction SilentlyContinue
-if ($files.Count -eq 0) {
-    Write-Host "No files found in source: $source" -ForegroundColor Yellow
+Write-Host "`nScanning source to compute totals..." -ForegroundColor Yellow
+$sourceFiles = Get-ChildItem -Path $Source -Recurse -File -ErrorAction SilentlyContinue
+if ($sourceFiles.Count -eq 0) {
+    Write-Host "No files found in source: $Source" -ForegroundColor Yellow
     Read-Host "Press Enter to exit"
     exit 0
 }
+$totalBytes = ($sourceFiles | Measure-Object -Property Length -Sum).Sum
+$totalFiles = $sourceFiles.Count
 
-$totalFiles = $files.Count
-$totalBytes = ($files | Measure-Object -Property Length -Sum).Sum
-$bytesCopied = 0L
-$startTime = Get-Date
-
-Write-Host " Files to copy : $totalFiles"
+Write-Host (" Files to copy : {0:N0}" -f $totalFiles)
 Write-Host (" Total size    : {0:N2} MB" -f ($totalBytes / 1MB))
 Write-Host ""
 
 # -------------------------
-# Per-file copy using robocopy + progress
+# Run robocopy bulk copy in background and monitor progress
 # -------------------------
-# Per-file robocopy options:
-# /COPY:DAT  - copy Data, Attributes, Timestamps
-# /DCOPY:DA  - copy Directory Attributes and Timestamps
-# /R:1 /W:1   - retry once, wait 1s
-# /NFL /NDL   - suppress file/dir lists in console (we log)
-# /NP         - no progress in robocopy output (we show our own)
-# /LOG+:file  - append to log
-$robocopyPerFileArgs = "/COPY:DAT /DCOPY:DA /R:1 /W:1 /NFL /NDL /NP /LOG+:`"$robocopyLog`""
+# Robocopy copy options: preserve data, attributes, timestamps; copy directory attributes; multithreaded
+$copyArgs = @(
+    "`"$Source`"",
+    "`"$Destination`"",
+    "/E",
+    "/COPY:DAT",
+    "/DCOPY:DA",
+    "/ZB",
+    "/MT:32",
+    "/R:3",
+    "/W:5",
+    "/V",
+    "/FP",
+    "/TEE",
+    "/LOG:`"$tempRobocopyLog`""
+) -join " "
 
-$index = 0
-foreach ($file in $files) {
-    $index++
-    $relativePath = $file.FullName.Substring($source.Length).TrimStart('\','/')
-    $targetFile = Join-Path $destination $relativePath
-    $targetDir = Split-Path $targetFile -Parent
+Write-Host "Starting robocopy..." -ForegroundColor Yellow
+Write-Host " robocopy $copyArgs" -ForegroundColor DarkGray
 
-    if (-not (Test-Path $targetDir)) {
-        New-Item -Path $targetDir -ItemType Directory -Force | Out-Null
+$proc = Start-Process -FilePath "robocopy" -ArgumentList $copyArgs -NoNewWindow -PassThru
+
+# Monitor progress by summing destination bytes while robocopy runs
+$bytesCopied = 0L
+$startTime = Get-Date
+while (-not $proc.HasExited) {
+    try {
+        $destBytes = (Get-ChildItem -Path $Destination -Recurse -File -ErrorAction SilentlyContinue | Measure-Object -Property Length -Sum).Sum
+    } catch {
+        $destBytes = $bytesCopied
     }
-
-    $fileNameOnly = Split-Path $relativePath -Leaf
-    $fileDirOnly  = Split-Path $relativePath -Parent
-    if ($fileDirOnly -eq '') { $fileDirOnly = '.' }
-
-    $srcDirForRobocopy = Join-Path $source $fileDirOnly
-    $dstDirForRobocopy = Join-Path $destination $fileDirOnly
-
-    $robocopyCmd = "robocopy `"$srcDirForRobocopy`" `"$dstDirForRobocopy`" `"$fileNameOnly`" $robocopyPerFileArgs"
-    Invoke-Expression $robocopyCmd
-    $rc = $LASTEXITCODE
-
-    $bytesCopied += $file.Length
-
+    $bytesCopied = [math]::Max($bytesCopied, [int64]$destBytes)
     $percent = if ($totalBytes -gt 0) { [math]::Round(($bytesCopied / $totalBytes) * 100, 2) } else { 100 }
     $elapsed = (Get-Date) - $startTime
     $speed = if ($elapsed.TotalSeconds -gt 0) { ($bytesCopied / 1MB) / $elapsed.TotalSeconds } else { 0 }
     $remainingBytes = [math]::Max(0, $totalBytes - $bytesCopied)
-    $eta = if ($speed -gt 0) { [TimeSpan]::FromSeconds(($remainingBytes / 1MB) / $speed) } else { [TimeSpan]::MaxValue }
+    $etaText = if ($speed -gt 0) { ([TimeSpan]::FromSeconds(($remainingBytes / 1MB) / $speed)).ToString("hh\:mm\:ss") } else { "Unknown" }
 
-    Write-Progress -Activity "SHEIKLAB Robocopy" `
-                   -Status "Copying file $index of $totalFiles : $fileNameOnly" `
-                   -PercentComplete $percent `
-                   -CurrentOperation ("{0:N2} MB copied — {1:N2} MB/s — ETA: {2}" -f ($bytesCopied/1MB), $speed, (if ($eta -eq [TimeSpan]::MaxValue) { "Unknown" } else { $eta.ToString("hh\:mm\:ss") }))
-
-    if ($rc -lt 8) {
-        Add-Content -Path $verifiedCopied -Value $file.FullName
-    } else {
-        Add-Content -Path $verifiedNotCopied -Value ("ERROR copying: {0} (robocopy exit {1})" -f $file.FullName, $rc)
-    }
+    $status = "{0:N2} MB copied — {1:N2} MB/s — ETA: {2}" -f ($bytesCopied/1MB), $speed, $etaText
+    Write-Progress -Activity "SHEIKLAB Robocopy" -Status $status -PercentComplete $percent -CurrentOperation ("Copying to $Destination")
+    Start-Sleep -Seconds 1
 }
 
-# -------------------------
-# Final robocopy reconciliation pass (includes /COPY:DAT and /DCOPY:DA)
-# -------------------------
-Write-Host "`nRunning final robocopy reconciliation pass (preserves data, attributes, timestamps)..." -ForegroundColor Yellow
-$finalArgs = "/E /COPY:DAT /DCOPY:DA /ZB /MT:32 /R:3 /W:5 /V /FP /TEE /LOG:`"$robocopyLog`""
-$finalCmd = "robocopy `"$source`" `"$destination`" $finalArgs"
-Write-Host "Executing: $finalCmd" -ForegroundColor DarkGray
-Invoke-Expression $finalCmd
-$finalExit = $LASTEXITCODE
+# Ensure final progress shows 100%
+$bytesCopied = (Get-ChildItem -Path $Destination -Recurse -File -ErrorAction SilentlyContinue | Measure-Object -Property Length -Sum).Sum
+$percent = if ($totalBytes -gt 0) { [math]::Round(($bytesCopied / $totalBytes) * 100, 2) } else { 100 }
+Write-Progress -Activity "SHEIKLAB Robocopy" -Status "Completed" -PercentComplete $percent -CurrentOperation "Copy finished"
+Write-Host "`nRobocopy finished with exit code $($proc.ExitCode)" -ForegroundColor Cyan
+
+# Append final note to temp log
+"Robocopy finished: $(Get-Date -Format 'yyyy-MM-dd HH:mm:ss') ExitCode: $($proc.ExitCode)" | Out-File -FilePath $tempRobocopyLog -Append -Encoding UTF8
 
 # -------------------------
-# Dry-run verification (list-only) using /E /L /V /BYTES /TS /FP and save to dry-run log
+# Verification dry-run exactly as requested
+# Example: robocopy D:\ISO E:\ISO /E /L /V /BYTES /TS /FP
+# Save output to single log file named yyyyMMdd_src_dst.log in destination
 # -------------------------
-Write-Host "`nRunning dry-run verification (list-only) to produce a readable log..." -ForegroundColor Yellow
-$dryRunArgs = "/E /L /V /BYTES /TS /FP /LOG:`"$dryRunLog`""
-$dryRunCmd = "robocopy `"$source`" `"$destination`" $dryRunArgs"
-Write-Host "Executing: $dryRunCmd" -ForegroundColor DarkGray
-Invoke-Expression $dryRunCmd
-$dryRunExit = $LASTEXITCODE
+Write-Host "`nRunning verification dry-run (list-only) and saving to $finalLog" -ForegroundColor Yellow
+$dryRunArgs = @(
+    "`"$Source`"",
+    "`"$Destination`"",
+    "/E",
+    "/L",
+    "/V",
+    "/BYTES",
+    "/TS",
+    "/FP",
+    "/LOG:`"$finalLog`""
+) -join " "
 
-# -------------------------
-# Parse robocopy log for additional verification entries
-# -------------------------
-Write-Host "`nParsing robocopy log for verification entries..." -ForegroundColor Yellow
-$logLines = Get-Content -Path $robocopyLog -ErrorAction SilentlyContinue
-
-$successPatterns = @('New File','Copied','100%','Newer')
-$failurePatterns = @('ERROR','Access is denied','Access Denied','The system cannot find the file specified','Failed','Unable to copy','Retrying')
-
-$additionalCopied = New-Object System.Collections.Generic.List[string]
-$additionalNotCopied = New-Object System.Collections.Generic.List[string]
-
-foreach ($line in $logLines) {
-    $t = $line.Trim()
-    if ($t -eq '') { continue }
-    foreach ($fp in $failurePatterns) {
-        if ($t -like "*$fp*") {
-            $additionalNotCopied.Add($t)
-            continue 2
-        }
-    }
-    foreach ($sp in $successPatterns) {
-        if ($t -like "*$sp*") {
-            if ($t -match "([A-Za-z]:\\.+)") {
-                $additionalCopied.Add($matches[1])
-            } else {
-                $additionalCopied.Add($t)
-            }
-            continue 2
-        }
-    }
-}
-
-if ($additionalCopied.Count -gt 0) {
-    $additionalCopied | Select-Object -Unique | Out-File -FilePath $verifiedCopied -Append -Encoding UTF8
-}
-if ($additionalNotCopied.Count -gt 0) {
-    $additionalNotCopied | Select-Object -Unique | Out-File -FilePath $verifiedNotCopied -Append -Encoding UTF8
-}
+Write-Host " robocopy $dryRunArgs" -ForegroundColor DarkGray
+# Run dry-run and wait
+$dryProc = Start-Process -FilePath "robocopy" -ArgumentList $dryRunArgs -NoNewWindow -Wait -PassThru
+$dryExit = $dryProc.ExitCode
 
 # -------------------------
-# Final Summary
+# Final summary
 # -------------------------
 Write-Host "`n==================== SUMMARY ====================" -ForegroundColor Cyan
-Write-Host (" Start time            : {0}" -f $startTime)
-Write-Host (" End time              : {0}" -f (Get-Date))
-Write-Host (" Total files scanned   : {0}" -f $totalFiles)
-Write-Host (" Total size (MB)       : {0:N2}" -f ($totalBytes / 1MB))
-Write-Host (" Robocopy final code   : {0}" -f $finalExit)
-Write-Host (" Dry-run exit code     : {0}" -f $dryRunExit)
-Write-Host " Verification logs     : " -NoNewline
-Write-Host "COPIED -> $verifiedCopied" -ForegroundColor Green
-Write-Host "                     NOT_COPIED -> $verifiedNotCopied" -ForegroundColor Yellow
-Write-Host " Full robocopy log     : $robocopyLog" -ForegroundColor DarkGray
-Write-Host " Dry-run (list-only)   : $dryRunLog" -ForegroundColor DarkGray
+Write-Host (" Start time        : {0}" -f $startTime)
+Write-Host (" End time          : {0}" -f (Get-Date))
+Write-Host (" Source            : $Source")
+Write-Host (" Destination       : $Destination")
+Write-Host (" Total files       : {0:N0}" -f $totalFiles)
+Write-Host (" Total size (MB)   : {0:N2}" -f ($totalBytes / 1MB))
+Write-Host (" Copy exit code    : {0}" -f $proc.ExitCode)
+Write-Host (" Dry-run exit code : {0}" -f $dryExit)
+Write-Host (" Verification log  : $finalLog") -ForegroundColor Green
+Write-Host " Temp robocopy log : $tempRobocopyLog" -ForegroundColor DarkGray
 Write-Host "==================================================" -ForegroundColor Cyan
 
-"Robocopy Final Exit Code: $finalExit" | Out-File -FilePath $verifiedCopied -Append -Encoding UTF8
-"Robocopy Final Exit Code: $finalExit" | Out-File -FilePath $verifiedNotCopied -Append -Encoding UTF8
-"Dry-run Exit Code: $dryRunExit" | Out-File -FilePath $dryRunLog -Append -Encoding UTF8
-
-if ($finalExit -band 8) {
-    Write-Host "`n❌ Some files or directories failed to copy. Inspect the NOT_COPIED log and the robocopy log for details." -ForegroundColor Red
-} else {
-    Write-Host "`n✅ Copy completed. Review verification logs for a file-level audit." -ForegroundColor Green
-}
-
+# Exit
 Read-Host "Press Enter to exit"
