@@ -69,6 +69,7 @@ Write-Host "Starting FAST COPY operation..." -ForegroundColor Cyan
 
 # Execute robocopy
 robocopy @CopyArgs
+$CopyExitCode = $LASTEXITCODE
 
 Write-Host "=============================================" -ForegroundColor Cyan
 Write-Host "Copy completed. Starting verification phase..." -ForegroundColor Cyan
@@ -93,13 +94,18 @@ $VerifyArgs = @(
 
 Write-Host "Running verification (comparison-only mode)..." -ForegroundColor Yellow
 robocopy @VerifyArgs
+$VerifyExitCode = $LASTEXITCODE
 
 Write-Host "=============================================" -ForegroundColor Green
-Write-Host "Operation completed successfully." -ForegroundColor Green
+Write-Host "Operation completed." -ForegroundColor Green
+Write-Host "Copy Exit Code: $CopyExitCode" -ForegroundColor Green
+Write-Host "Verify Exit Code: $VerifyExitCode" -ForegroundColor Green
 Write-Host "Log file saved to:" -ForegroundColor Green
 Write-Host $LogFile -ForegroundColor Green
 Write-Host "=============================================" -ForegroundColor Green
 
+Write-Host "Press ENTER to close window..." -ForegroundColor Cyan
+Read-Host
+
 # Exit clean
 exit
-
