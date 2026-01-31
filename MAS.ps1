@@ -32,9 +32,8 @@ Write-Host "  ######  ##     ## ######## #### ##    ## ######## ##     ## ######
 Write-Host "======================================================================" -ForegroundColor Green
 Write-Host ""
 
-# This script is hosted on https://get.activated.win for https://massgrave.dev
-
-# Having trouble launching this script? Check https://massgrave.dev for help.
+# This script is hosted on <b>https://get.activated.win</b> for <b>https://massgrave.dev</b><br><br>
+# Having trouble launching this script? Check <a href="https://massgrave.dev">https://massgrave.dev</a> for help.<hr><pre>
 
 #if (-not $args) {
 Write-Host ''
@@ -50,7 +49,7 @@ Write-Host ''
     if ($ExecutionContext.SessionState.LanguageMode.value__ -ne 0) {
         $ExecutionContext.SessionState.LanguageMode
         Write-Host "PowerShell is not running in Full Language Mode."
-        Write-Host "Help - https://gravesoft.dev/fix_powershell" -ForegroundColor White -BackgroundColor Blue
+        Write-Host "Help - https://massgrave.dev/fix_powershell" -ForegroundColor White -BackgroundColor Blue
         return
     }
 
@@ -60,7 +59,7 @@ Write-Host ''
     catch {
         Write-Host "Error: $($_.Exception.Message)" -ForegroundColor Red
         Write-Host "Powershell failed to load .NET command."
-        Write-Host "Help - https://gravesoft.dev/in-place_repair_upgrade" -ForegroundColor White -BackgroundColor Blue
+        Write-Host "Help - https://massgrave.dev/in-place_repair_upgrade" -ForegroundColor White -BackgroundColor Blue
         return
     }
 
@@ -87,9 +86,9 @@ Write-Host ''
     try { [Net.ServicePointManager]::SecurityProtocol = [Net.SecurityProtocolType]::Tls12 } catch {}
 
     $URLs = @(
-        'https://raw.githubusercontent.com/massgravel/Microsoft-Activation-Scripts/da0b2800d9c783e63af33a6178267ac2201adb2a/MAS/All-In-One-Version-KL/MAS_AIO.cmd',
-        'https://dev.azure.com/massgrave/Microsoft-Activation-Scripts/_apis/git/repositories/Microsoft-Activation-Scripts/items?path=/MAS/All-In-One-Version-KL/MAS_AIO.cmd&versionType=Commit&version=da0b2800d9c783e63af33a6178267ac2201adb2a',
-        'https://git.activated.win/Microsoft-Activation-Scripts/plain/MAS/All-In-One-Version-KL/MAS_AIO.cmd?id=da0b2800d9c783e63af33a6178267ac2201adb2a'
+        'https://raw.githubusercontent.com/massgravel/Microsoft-Activation-Scripts/4fdefbc0d58befbe824440af39ed424c6386f65f/MAS/All-In-One-Version-KL/MAS_AIO.cmd',
+        'https://dev.azure.com/massgrave/Microsoft-Activation-Scripts/_apis/git/repositories/Microsoft-Activation-Scripts/items?path=/MAS/All-In-One-Version-KL/MAS_AIO.cmd&versionType=Commit&version=4fdefbc0d58befbe824440af39ed424c6386f65f',
+        'https://git.activated.win/Microsoft-Activation-Scripts/plain/MAS/All-In-One-Version-KL/MAS_AIO.cmd?id=4fdefbc0d58befbe824440af39ed424c6386f65f'
     )
     Write-Progress -Activity "Downloading..." -Status "Please wait"
     $errors = @()
@@ -122,7 +121,7 @@ Write-Host ''
     }
 
     # Verify script integrity
-    $releaseHash = '22D51870447129A730A66887C6E48B83B4B8B230CDC10E24597BA1CB0F471864'
+    $releaseHash = 'C731BB797994B7185944E8B6075646EBDC2CEF87960B4B2F437306CB4CE28F03'
     $stream = New-Object IO.MemoryStream
     $writer = New-Object IO.StreamWriter $stream
     $writer.Write($response)
@@ -137,10 +136,10 @@ Write-Host ''
 
     # Check for AutoRun registry which may create issues with CMD
     $paths = "HKCU:\SOFTWARE\Microsoft\Command Processor", "HKLM:\SOFTWARE\Microsoft\Command Processor"
-    foreach ($path in $paths) { 
-        if (Get-ItemProperty -Path $path -Name "Autorun" -ErrorAction SilentlyContinue) { 
+    foreach ($path in $paths) {
+        if (Get-ItemProperty -Path $path -Name "Autorun" -ErrorAction SilentlyContinue) {
             Write-Warning "Autorun registry found, CMD may crash! `nManually copy-paste the below command to fix...`nRemove-ItemProperty -Path '$path' -Name 'Autorun'"
-        } 
+        }
     }
 
     $rand = [Guid]::NewGuid().Guid
@@ -165,19 +164,8 @@ Write-Host ''
     }
     else {
         saps -FilePath $env:ComSpec -ArgumentList "/c """"$FilePath"" -el $args""" -Wait -Verb RunAs
-    }	
+    }
+
     CheckFile $FilePath
-
-    $FilePaths = @("$env:SystemRoot\Temp\MAS*.cmd", "$env:USERPROFILE\AppData\Local\Temp\MAS*.cmd")
-    foreach ($FilePath in $FilePaths) { Get-Item $FilePath -ErrorAction SilentlyContinue | Remove-Item }
+    Remove-Item -Path $FilePath
 } @args
-
-# PowerShell History Cleanup
-Clear-History
-$historyPath = [System.IO.Path]::Combine($env:APPDATA, 'Microsoft\Windows\PowerShell\PSReadLine\ConsoleHost_history.txt')
-if (Test-Path $historyPath) {
-    Remove-Item $historyPath -Force
-    Write-Host "PowerShell history cleared." -ForegroundColor Green
-} else {
-    Write-Host "No persistent history file found." -ForegroundColor Yellow
-}
