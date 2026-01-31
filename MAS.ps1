@@ -1,6 +1,6 @@
 <#
   Microsoft Activation Script — Powered by SYSTEMBYTES
-  Version: 2.0
+  Version: 3.10
   Author: Sheik Dawood
   Description: Modular, OEM-aware endpoint deployment script for Technarch clients across the UAE.
   Last Updated: 2026-01-31
@@ -18,7 +18,7 @@ if (-not ([Security.Principal.WindowsPrincipal] `
 }
 
 # Window title
-$Host.UI.RawUI.WindowTitle = "Microsoft Activation Script"
+$Host.UI.RawUI.WindowTitle = "Microsoft Activation Script 3.10"
 
 # SHEIKLAB Banner
 Write-Host "======================================================================" -ForegroundColor Green
