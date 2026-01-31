@@ -1,9 +1,9 @@
 <#
   Microsoft Activation Script — Powered by SYSTEMBYTES
-  Version: 1.0
+  Version: 2.0
   Author: Sheik Dawood
   Description: Modular, OEM-aware endpoint deployment script for Technarch clients across the UAE.
-  Last Updated: 2026-01-26
+  Last Updated: 2026-01-31
 #>
 
 #Requires -RunAsAdministrator
