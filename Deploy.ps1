@@ -152,9 +152,9 @@ $appsPowerdesk = @(
     # @{ Id = "Microsoft.DotNet.AspNetCore.6"; Name = "ASP.NET Core Runtime 6 (LTS)" },
     # @{ Id = "Microsoft.DotNet.AspNetCore.8"; Name = "ASP.NET Core Runtime 8 (LTS)" },
     # @{ Id = "Microsoft.DotNet.AspNetCore.10"; Name = "ASP.NET Core Runtime 10 (LTS)" },
-    # @{ Id = "Oracle.JavaRuntimeEnvironment"; Name = "Java 8" },
+    @{ Id = "Oracle.JavaRuntimeEnvironment"; Name = "Java 8" },
     # @{ Id = "Microsoft.OpenJDK.17"; Name = "OpenJDK 17 LTS" },
-    @{ Id = "Microsoft.OpenJDK.21"; Name = "OpenJDK 21 LTS" }
+    # @{ Id = "Microsoft.OpenJDK.21"; Name = "OpenJDK 21 LTS" }
     # @{ Id = "Microsoft.DirectX"; Name = "DirectX End-User Runtime" },
     # @{ Id = "Microsoft.XNARedist"; Name = "Microsoft XNA Framework" }
 )
@@ -172,8 +172,8 @@ $appsPowerbuild = $appsPowerdesk + @(
     @{ Id = "PDFgear.PDFgear"; Name = "PDFgear" },
     # @{ Id = "FastCopy.FastCopy"; Name = "FastCopy" },
     @{ Id = "Microsoft.Office"; Name = "Microsoft 365 Apps for enterprise" },
-    @{ Id = "SlackTechnologies.Slack"; Name = "Slack" },
-    @{ Id = "Zoom.Zoom"; Name = "Zoom Workplace" }
+    # @{ Id = "SlackTechnologies.Slack"; Name = "Slack" },
+    # @{ Id = "Zoom.Zoom"; Name = "Zoom Workplace" }
     # @{ Id = "AnyDesk.AnyDesk"; Name = "AnyDesk" },
     # @{ Id = "RustDesk.RustDesk"; Name = "RustDesk" },
     # @{ Id = "Famatech.AdvancedIPScanner"; Name = "Advanced IP Scanner" },
