@@ -152,7 +152,7 @@ $appsPowerdesk = @(
     # @{ Id = "Microsoft.DotNet.AspNetCore.6"; Name = "ASP.NET Core Runtime 6 (LTS)" },
     # @{ Id = "Microsoft.DotNet.AspNetCore.8"; Name = "ASP.NET Core Runtime 8 (LTS)" },
     # @{ Id = "Microsoft.DotNet.AspNetCore.10"; Name = "ASP.NET Core Runtime 10 (LTS)" },
-    @{ Id = "Oracle.JavaRuntimeEnvironment"; Name = "Java 8" },
+    @{ Id = "Oracle.JavaRuntimeEnvironment"; Name = "Java 8" }
     # @{ Id = "Microsoft.OpenJDK.17"; Name = "OpenJDK 17 LTS" },
     # @{ Id = "Microsoft.OpenJDK.21"; Name = "OpenJDK 21 LTS" }
     # @{ Id = "Microsoft.DirectX"; Name = "DirectX End-User Runtime" },
